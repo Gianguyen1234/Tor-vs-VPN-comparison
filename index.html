@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tor vs VPN Comparison</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .network-node {
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .network-node:hover {
+            transform: scale(1.1);
+        }
+
+        .comparison-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .tech-diagram {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .connection-line {
+            position: absolute;
+            background-color: #3b82f6;
+            transform-origin: left center;
+            z-index: 1;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.7;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* New animation styles */
+        .data-packet {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            z-index: 5;
+            opacity: 0;
+        }
+
+        .tor-packet {
+            background-color: #f97316;
+            box-shadow: 0 0 10px #f97316;
+        }
+
+        .vpn-packet {
+            background-color: #3b82f6;
+            box-shadow: 0 0 10px #3b82f6;
+        }
+
+        @keyframes movePacketTor1 {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0);
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            30% {
+                transform: translate(100px, -50px);
+            }
+
+            35% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes movePacketTor2 {
+            0% {
+                opacity: 0;
+                transform: translate(100px, -50px);
+            }
+
+            35% {
+                opacity: 0;
+            }
+
+            40% {
+                opacity: 1;
+            }
+
+            65% {
+                transform: translate(50px, 50px);
+            }
+
+            70% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes movePacketTor3 {
+            0% {
+                opacity: 0;
+                transform: translate(50px, 50px);
+            }
+
+            70% {
+                opacity: 0;
+            }
+
+            75% {
+                opacity: 1;
+            }
+
+            95% {
+                transform: translate(250px, 0);
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes movePacketTor4 {
+            0% {
+                opacity: 0;
+                transform: translate(250px, 0);
+            }
+
+            95% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(300px, 0);
+            }
+        }
+
+        @keyframes movePacketVPN1 {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0);
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            95% {
+                transform: translate(250px, 0);
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes movePacketVPN2 {
+            0% {
+                opacity: 0;
+                transform: translate(250px, 0);
+            }
+
+            95% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(300px, 0);
+            }
+        }
+
+        .encryption-layer {
+            position: absolute;
+            border-radius: 50%;
+            border-style: solid;
+            border-width: 2px;
+            opacity: 0.7;
+            transform-origin: center;
+            z-index: 2;
+        }
+
+        .tor-layer {
+            border-color: #f97316;
+            animation: pulseLayer 4s infinite;
+        }
+
+        .vpn-layer {
+            border-color: #3b82f6;
+            animation: pulseLayer 3s infinite;
+        }
+
+        @keyframes pulseLayer {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+        }
+
+        .node-glow {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(251, 146, 60, 0.4) 0%, rgba(251, 146, 60, 0) 70%);
+            z-index: 0;
+            animation: pulseGlow 3s infinite;
+        }
+
+        .vpn-glow {
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0) 70%);
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center flex-wrap gap-4">
+                <h1 class="text-3xl font-bold flex items-center">
+                    <i class="fas fa-user-shield mr-2"></i> Tor vs VPN Comparison
+                </h1>
+                <div class="text-sm flex items-center space-x-2">
+                    <span class="text-gray-200">Created by</span>
+                    <span class="font-semibold text-white">Holy_Dev</span>
+                    <a href="https://www.youtube.com/@Holy_Dev" target="_blank"
+                        class="hover:underline text-red-500 flex items-center space-x-1">
+                        <i class="fab fa-youtube"></i><span>YouTube</span>
+                    </a>
+                    <a href="https://github.com/Holy-Dev" target="_blank"
+                        class="hover:underline text-white flex items-center space-x-1">
+                        <i class="fab fa-github"></i><span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Overview Section -->
+        <section id="overview" class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-indigo-700 mb-4">Tor vs VPN: Privacy Technologies Compared</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Understanding the differences between Tor and VPN helps you choose the right privacy solution for
+                    your needs.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <!-- Tor Card -->
+                <div class="bg-white p-6 rounded-xl shadow-md feature-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-orange-100 text-orange-600 p-3 rounded-full mr-4">
+                            <i class="fas fa-project-diagram text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">Tor Network</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        The Onion Router (Tor) is a free, decentralized network that anonymizes internet traffic by
+                        routing it through multiple volunteer-operated servers.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span
+                            class="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
+                            Decentralized
+                        </span>
+                        <span
+                            class="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
+                            Multi-layered encryption
+                        </span>
+                        <span
+                            class="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
+                            Free to use
+                        </span>
+                    </div>
+                </div>
+
+                <!-- VPN Card -->
+                <div class="bg-white p-6 rounded-xl shadow-md feature-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 text-blue-600 p-3 rounded-full mr-4">
+                            <i class="fas fa-lock text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">VPN Service</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        A Virtual Private Network (VPN) encrypts your internet connection and routes it through a server
+                        operated by the VPN provider.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                            Centralized
+                        </span>
+                        <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                            Single encryption layer
+                        </span>
+                        <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                            Often paid service
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technology Diagrams -->
+            <div class="bg-white p-8 rounded-xl shadow-md mb-12">
+                <h3 class="text-2xl font-semibold text-center mb-8">How They Work Technically</h3>
+
+                <div class="flex mb-4 justify-center">
+                    <button class="tab-btn active px-6 py-2 bg-indigo-600 text-white rounded-l-lg"
+                        data-tab="tor-diagram">Tor Network</button>
+                    <button class="tab-btn px-6 py-2 bg-gray-200 text-gray-700 rounded-r-lg" data-tab="vpn-diagram">VPN
+                        Connection</button>
+                </div>
+
+                <div id="tor-diagram" class="tab-content active tech-diagram">
+                    <div class="relative h-full">
+                        <!-- User -->
+                        <div
+                            class="network-node absolute left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-orange-100 border-2 border-orange-400 rounded-full w-16 h-16 flex items-center justify-center">
+                            <i class="fas fa-user text-orange-600 text-xl"></i>
+                            <div class="node-glow w-24 h-24 -ml-4 -mt-4"></div>
+                        </div>
+
+                        <!-- Entry Node -->
+                        <div
+                            class="network-node absolute left-2/4 top-1/4 transform -translate-x-1/2 -translate-y-1/2 bg-orange-100 border-2 border-orange-400 rounded-full w-16 h-16 flex items-center justify-center">
+                            <i class="fas fa-server text-orange-600 text-xl"></i>
+                            <div class="absolute -bottom-6 text-xs font-medium">Entry Node</div>
+                            <div class="node-glow w-24 h-24 -ml-4 -mt-4"></div>
+                        </div>
+
+                        <!-- Middle Node -->
+                        <div
+                            class="network-node absolute left-1/3 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-orange-100 border-2 border-orange-400 rounded-full w-16 h-16 flex items-center justify-center">
+                            <i class="fas fa-random text-orange-600 text-xl"></i>
+                            <div class="absolute -bottom-6 text-xs font-medium">Middle Node</div>
+                            <div class="node-glow w-24 h-24 -ml-4 -mt-4"></div>
+                        </div>
+
+                        <!-- Exit Node -->
+                        <div
+                            class="network-node absolute left-3/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-orange-100 border-2 border-orange-400 rounded-full w-16 h-16 flex items-center justify-center">
+                            <i class="fas fa-door-open text-orange-600 text-xl"></i>
+                            <div class="absolute -bottom-6 text-xs font-medium">Exit Node</div>
+                            <div class="node-glow w-24 h-24 -ml-4 -mt-4"></div>
+                        </div>
+
+                        <!-- Destination -->
+                        <div
+                            class="network-node absolute left-7/8 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-100 border-2 border-gray-400 rounded-full w-16 h-16 flex items-center justify-center">
+                            <i class="fas fa-globe text-gray-600 text-xl"></i>
+                            <div class="absolute -bottom-6 text-xs font-medium">Website</div>
+                        </div>
+
+                        <!-- Connection Lines -->
+                        <div
+                            class="connection-line w-1/4 h-1 left-1/4 top-1/2 origin-left rotate-30 animate-pulse-slow">
+                        </div>
+                        <div
+                            class="connection-line w-1/6 h-1 left-2/4 top-1/4 origin-left rotate-120 animate-pulse-slow">
+                        </div>
+                        <div
+                            class="connection-line w-1/4 h-1 left-3/4 top-1/2 origin-left rotate-30 animate-pulse-slow">
+                        </div>
+                        <div
+                            class="connection-line w-1/6 h-1 left-7/8 top-1/2 origin-left rotate-180 animate-pulse-slow">
+                        </div>
+
+                        <!-- Encryption layers -->
+                        <div
+                            class="encryption-layer tor-layer w-24 h-24 left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        </div>
+                        <div
+                            class="encryption-layer tor-layer w-24 h-24 left-2/4 top-1/4 transform -translate-x-1/2 -translate-y-1/2">
+                        </div>
+                        <div
+                            class="encryption-layer tor-layer w-24 h-24 left-1/3 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        </div>
+                        <div
+                            class="encryption-layer tor-layer w-24 h-24 left-3/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        </div>
+
+                        <!-- Data packets -->
+                        <div class="data-packet tor-packet left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                            style="animation: movePacketTor1 6s infinite;"></div>
+                        <div class="data-packet tor-packet left-2/4 top-1/4 transform -translate-x-1/2 -translate-y-1/2"
+                            style="animation: movePacketTor2 6s infinite 1s;"></div>
+                        <div class="data-packet tor-packet left-1/3 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                            style="animation: movePacketTor3 6s infinite 2s;"></div>
+                        <div class="data-packet tor-packet left-3/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                            style="animation: movePacketTor4 6s infinite 3s;"></div>
+                    </div>
+                </div>
+
+                <div id="vpn-diagram" class="tab-content tech-diagram">
+                    <div class="relative h-full">
+                        <!-- User -->
+                        <div
+                            class="network-node absolute left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-100 border-2 border-blue-400 rounded-full w-16 h-16 flex items-center justify-center">
+                            <i class="fas fa-user text-blue-600 text-xl"></i>
+                            <div class="node-glow vpn-glow w-24 h-24 -ml-4 -mt-4"></div>
+                        </div>
+
+                        <!-- VPN Server -->
+                        <div
+                            class="network-node absolute left-2/3 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-100 border-2 border-blue-400 rounded-full w-16 h-16 flex items-center justify-center">
+                            <i class="fas fa-shield-alt text-blue-600 text-xl"></i>
+                            <div class="absolute -bottom-6 text-xs font-medium">VPN Server</div>
+                            <div class="node-glow vpn-glow w-24 h-24 -ml-4 -mt-4"></div>
+                        </div>
+
+                        <!-- Destination -->
+                        <div
+                            class="network-node absolute left-7/8 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-100 border-2 border-gray-400 rounded-full w-16 h-16 flex items-center justify-center">
+                            <i class="fas fa-globe text-gray-600 text-xl"></i>
+                            <div class="absolute -bottom-6 text-xs font-medium">Website</div>
+                        </div>
+
+                        <!-- Connection Lines -->
+                        <div class="connection-line w-2/5 h-1 left-1/4 top-1/2 origin-left rotate-0 animate-pulse-slow">
+                        </div>
+                        <div class="connection-line w-1/6 h-1 left-2/3 top-1/2 origin-left rotate-0 animate-pulse-slow">
+                        </div>
+
+                        <!-- Encryption layer -->
+                        <div
+                            class="encryption-layer vpn-layer w-32 h-32 left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        </div>
+                        <div
+                            class="encryption-layer vpn-layer w-32 h-32 left-2/3 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        </div>
+
+                        <!-- Data packets -->
+                        <div class="data-packet vpn-packet left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                            style="animation: movePacketVPN1 4s infinite;"></div>
+                        <div class="data-packet vpn-packet left-2/3 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                            style="animation: movePacketVPN2 4s infinite 2s;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comparison Section -->
+        <section id="comparison" class="mb-16 bg-white p-8 rounded-xl shadow-md">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-8 text-center">Detailed Comparison</h2>
+
+            <div class="overflow-x-auto">
+                <table class="comparison-table w-full">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="text-left py-4 px-4">Feature</th>
+                            <th class="text-left py-4 px-4">Tor</th>
+                            <th class="text-left py-4 px-4">VPN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-medium">Privacy Level</td>
+                            <td>High (multiple encryption layers, random path)</td>
+                            <td>Medium (single encryption, depends on provider)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">Speed</td>
+                            <td>Slow (multiple hops increase latency)</td>
+                            <td>Fast (direct connection to server)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">Cost</td>
+                            <td>Free</td>
+                            <td>Usually paid (free options often limited)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">Encryption</td>
+                            <td>Multi-layered (onion routing)</td>
+                            <td>Single layer (typically AES-256)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">Traffic Analysis</td>
+                            <td>Resistant (hard to trace origin)</td>
+                            <td>Vulnerable (provider can see traffic)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">IP Masking</td>
+                            <td>Yes (shows exit node IP)</td>
+                            <td>Yes (shows VPN server IP)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">Logging</td>
+                            <td>No logs (decentralized)</td>
+                            <td>Depends on provider (some keep logs)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">Best For</td>
+                            <td>Maximum anonymity, accessing .onion sites</td>
+                            <td>General privacy, bypassing geo-restrictions</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Use Cases Section -->
+        <section id="use-cases" class="mb-16">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-8 text-center">When to Use Each</h2>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Tor Use Cases -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-orange-100 text-orange-600 p-3 rounded-full mr-4">
+                            <i class="fas fa-project-diagram text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">When to Use Tor</h3>
+                    </div>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>When you need maximum anonymity (whistleblowing, activism)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>Accessing the dark web or .onion sites</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>Bypassing censorship in highly restrictive countries</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>When you don't trust any single organization with your data</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- VPN Use Cases -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 text-blue-600 p-3 rounded-full mr-4">
+                            <i class="fas fa-lock text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">When to Use VPN</h3>
+                    </div>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>General privacy protection on public Wi-Fi</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>Bypassing geo-restrictions (streaming, websites)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>When speed is important (video calls, downloads)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>When you trust a reputable VPN provider</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <!-- VPN animation -->
+        <div class="flex justify-center items-center pb-4">
+            <a href="vpn-works-animation.html" target="_blank"
+                class="inline-block bg-indigo-500 text-white font-bold text-lg py-2 px-6 rounded-lg shadow-md hover:bg-indigo-800 transition duration-200">
+                Visit Example
+            </a>
+        </div>
+
+
+        <!-- Combined Usage Section -->
+        <section class="mt-16 bg-indigo-50 p-8 rounded-xl">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-6 text-center">Advanced: Using Tor and VPN Together</h2>
+
+            <div class="max-w-3xl mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                    <h3 class="text-xl font-semibold mb-3 flex items-center">
+                        <i class="fas fa-sitemap text-indigo-600 mr-2"></i> VPN over Tor
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                        Connecting to a VPN after using Tor hides your Tor usage from your ISP but still reveals your
+                        final destination to the VPN provider.
+                    </p>
+                    <div class="code-block bg-gray-800 text-gray-100 p-4 rounded text-sm">
+                        <span class="text-green-400"># Flow: You → Tor Network → VPN Server → Internet</span><br>
+                        <span class="text-blue-400">Pros:</span> Hides Tor usage from ISP<br>
+                        <span class="text-red-400">Cons:</span> VPN provider sees your traffic
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-xl font-semibold mb-3 flex items-center">
+                        <i class="fas fa-route text-indigo-600 mr-2"></i> Tor over VPN
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                        Connecting to Tor through a VPN hides your real IP from the Tor entry node but your VPN provider
+                        knows you're using Tor.
+                    </p>
+                    <div class="code-block bg-gray-800 text-gray-100 p-4 rounded text-sm">
+                        <span class="text-green-400"># Flow: You → VPN Server → Tor Network → Internet</span><br>
+                        <span class="text-blue-400">Pros:</span> Entry node doesn't see your real IP<br>
+                        <span class="text-red-400">Cons:</span> VPN knows you're using Tor
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <h3 class="text-xl font-bold mb-4">Tor vs VPN Comparison</h3>
+                <p class="text-gray-400 max-w-2xl mx-auto mb-6">
+                    An educational resource to help you understand the differences between these privacy technologies.
+                </p>
+                <div class="flex justify-center space-x-4 mb-6">
+                    <a href="https://github.com/Gianguyen1234" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-github text-xl"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@dev-maniac2349/featured"
+                        class="text-gray-400 hover:text-white transition" target="_blank">
+                        <i class="fab fa-youtube text-xl"></i>
+                    </a>
+                    <a href="mailto:nguyenluthao252@gmail.com" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-envelope text-xl"></i>
+                    </a>
+                </div>
+                <p class="text-gray-500 text-sm">
+                    &copy; 2025 Privacy Tech Comparison. Created by Holy_Dev. Not affiliated with Tor or any VPN
+                    provider.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tab functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    // Remove active class from all buttons and contents
+                    tabBtns.forEach(b => b.classList.remove('active', 'bg-indigo-600', 'text-white'));
+                    tabBtns.forEach(b => b.classList.add('bg-gray-200', 'text-gray-700'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    // Add active class to clicked button
+                    this.classList.remove('bg-gray-200', 'text-gray-700');
+                    this.classList.add('active', 'bg-indigo-600', 'text-white');
+
+                    // Show corresponding content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Create additional data packets dynamically for Tor diagram
+            const torDiagram = document.getElementById('tor-diagram');
+            for (let i = 0; i < 3; i++) {
+                const delay = Math.random() * 3;
+                const packet = document.createElement('div');
+                packet.className = 'data-packet tor-packet left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2';
+                packet.style.animation = `movePacketTor1 6s infinite ${delay}s`;
+                torDiagram.querySelector('.relative').appendChild(packet);
+
+                const packet2 = document.createElement('div');
+                packet2.className = 'data-packet tor-packet left-2/4 top-1/4 transform -translate-x-1/2 -translate-y-1/2';
+                packet2.style.animation = `movePacketTor2 6s infinite ${delay + 1}s`;
+                torDiagram.querySelector('.relative').appendChild(packet2);
+
+                const packet3 = document.createElement('div');
+                packet3.className = 'data-packet tor-packet left-1/3 top-1/2 transform -translate-x-1/2 -translate-y-1/2';
+                packet3.style.animation = `movePacketTor3 6s infinite ${delay + 2}s`;
+                torDiagram.querySelector('.relative').appendChild(packet3);
+
+                const packet4 = document.createElement('div');
+                packet4.className = 'data-packet tor-packet left-3/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2';
+                packet4.style.animation = `movePacketTor4 6s infinite ${delay + 3}s`;
+                torDiagram.querySelector('.relative').appendChild(packet4);
+            }
+
+            // Create additional data packets dynamically for VPN diagram
+            const vpnDiagram = document.getElementById('vpn-diagram');
+            for (let i = 0; i < 3; i++) {
+                const delay = Math.random() * 2;
+                const packet = document.createElement('div');
+                packet.className = 'data-packet vpn-packet left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2';
+                packet.style.animation = `movePacketVPN1 4s infinite ${delay}s`;
+                vpnDiagram.querySelector('.relative').appendChild(packet);
+
+                const packet2 = document.createElement('div');
+                packet2.className = 'data-packet vpn-packet left-2/3 top-1/2 transform -translate-x-1/2 -translate-y-1/2';
+                packet2.style.animation = `movePacketVPN2 4s infinite ${delay + 2}s`;
+                vpnDiagram.querySelector('.relative').appendChild(packet2);
+            }
+        });
+    </script>
+</body>
+
+</html>

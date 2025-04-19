@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How VPN Works - Enhanced Animation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .device {
+            transition: all 0.3s ease;
+        }
+
+        .data-packet {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 10;
+        }
+
+        .encrypted {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7),
+                    0 0 0 0 rgba(59, 130, 246, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(59, 130, 246, 0),
+                    0 0 0 16px rgba(59, 130, 246, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0),
+                    0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+
+        .path-line {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 3s linear forwards;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .highlight {
+            animation: highlight 1.5s ease-in-out;
+        }
+
+        @keyframes highlight {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.2);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+
+        .bounce {
+            animation: bounce 0.5s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col items-center py-10">
+    <div class="w-full max-w-6xl mx-auto px-4">
+        <!-- Creator Header -->
+        <div class="text-center mt-6 mb-4">
+            <p class="text-md text-gray-600">
+                Created by
+                <a href="https://github.com/Gianguyen1234" target="_blank"
+                    class="font-bold text-purple-700 hover:underline inline-flex items-center">
+                    <i class="fab fa-github mr-1"></i> Holy_Dev
+                </a>
+                · Watch on
+                <a href="https://www.youtube.com/@dev-maniac2349" target="_blank"
+                    class="font-bold text-red-600 hover:underline inline-flex items-center">
+                    <i class="fab fa-youtube mr-1"></i> YouTube
+                </a>
+            </p>
+        </div>
+
+
+        <!-- VPN Animation UI -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-600 mb-2">How VPN Works</h1>
+            <p class="text-gray-600">An interactive visualization of Virtual Private Network technology</p>
+            <div class="mt-4 flex justify-center space-x-4">
+                <button id="startBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-play mr-2"></i> Start Animation
+                </button>
+                <button id="resetBtn"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-redo mr-2"></i> Reset
+                </button>
+                <button id="stepBtn"
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-step-forward mr-2"></i> Step-by-Step
+                </button>
+            </div>
+        </div>
+
+
+        <div class="bg-white rounded-xl shadow-xl p-6 mb-8">
+            <div class="relative h-[500px] bg-gray-50 rounded-lg border-2 border-gray-200 overflow-hidden">
+                <!-- User Device -->
+                <div id="userDevice"
+                    class="device absolute left-8 top-1/2 transform -translate-y-1/2 w-28 h-28 bg-white rounded-xl shadow-md flex flex-col items-center justify-center p-3 border-2 border-gray-300">
+                    <i class="fas fa-laptop text-4xl text-blue-500 mb-2"></i>
+                    <span class="text-sm font-medium">Your Device</span>
+                    <div id="userIP" class="text-xs text-gray-500 mt-1">IP: 192.168.1.10</div>
+                </div>
+
+                <!-- Internet Cloud -->
+                <div id="internet"
+                    class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-56 h-40 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-gray-300">
+                    <div class="text-center p-4">
+                        <i class="fas fa-cloud text-5xl text-gray-400 mb-2"></i>
+                        <span class="text-sm font-medium">Public Internet</span>
+                    </div>
+                </div>
+
+                <!-- Website Server -->
+                <div id="website"
+                    class="device absolute right-8 top-1/2 transform -translate-y-1/2 w-28 h-28 bg-white rounded-xl shadow-md flex flex-col items-center justify-center p-3 border-2 border-gray-300">
+                    <i class="fas fa-server text-4xl text-purple-500 mb-2"></i>
+                    <span class="text-sm font-medium">Website</span>
+                    <div id="websiteLog" class="text-xs text-gray-500 mt-1">Visitor: ...</div>
+                </div>
+
+                <!-- VPN Server -->
+                <div id="vpnServer"
+                    class="device absolute left-1/3 top-1/2 transform -translate-y-1/2 w-24 h-24 bg-blue-50 rounded-xl shadow-md flex flex-col items-center justify-center p-2 border-2 border-blue-400">
+                    <i class="fas fa-shield-alt text-3xl text-blue-600 mb-1"></i>
+                    <span class="text-xs font-medium">VPN Server</span>
+                    <div id="vpnIP" class="text-xs text-gray-600">IP: 104.18.22.35</div>
+                </div>
+
+                <!-- Hacker/ISP -->
+                <div id="hacker"
+                    class="device absolute left-1/2 top-20 transform -translate-x-1/2 w-20 h-20 bg-red-50 rounded-xl shadow-md flex flex-col items-center justify-center p-2 border-2 border-red-300 opacity-0">
+                    <i class="fas fa-user-secret text-2xl text-red-500 mb-1"></i>
+                    <span class="text-xs font-medium">ISP/Hacker</span>
+                </div>
+
+                <!-- Data packets will be added dynamically -->
+
+                <!-- SVG for connection paths -->
+                <svg id="connections" class="absolute inset-0 w-full h-full" style="z-index: 0;">
+                    <!-- Direct connection (no VPN) -->
+                    <path id="directPath" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-dasharray="5,5"
+                        d="M140,250 Q280,250 420,250" />
+
+                    <!-- VPN encrypted path -->
+                    <path id="vpnPath1" fill="none" stroke="#3B82F6" stroke-width="3" d="M140,250 Q220,200 280,200" />
+                    <path id="vpnPath2" fill="none" stroke="#3B82F6" stroke-width="3" d="M280,200 Q340,200 420,250" />
+
+                    <!-- Interception point -->
+                    <circle id="interceptPoint" cx="280" cy="250" r="5" fill="#EF4444" opacity="0" />
+                </svg>
+
+                <!-- Explanation boxes -->
+                <div id="explanation1"
+                    class="absolute left-40 top-32 w-56 bg-white p-4 rounded-xl shadow-lg border-2 border-blue-200 opacity-0">
+                    <div class="text-sm font-bold text-blue-600 mb-2">Without VPN:</div>
+                    <div class="text-xs text-gray-700">
+                        Your data travels in clear text through the public internet where it can be intercepted and read
+                        by ISPs, hackers, or government agencies.
+                    </div>
+                    <div
+                        class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-blue-200">
+                    </div>
+                </div>
+
+                <div id="explanation2"
+                    class="absolute left-48 top-40 w-56 bg-white p-4 rounded-xl shadow-lg border-2 border-blue-200 opacity-0">
+                    <div class="text-sm font-bold text-blue-600 mb-2">VPN Encryption:</div>
+                    <div class="text-xs text-gray-700">
+                        The VPN creates an encrypted tunnel between your device and the VPN server. All your data is
+                        scrambled and unreadable to outsiders.
+                    </div>
+                    <div
+                        class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-blue-200">
+                    </div>
+                </div>
+
+                <div id="explanation3"
+                    class="absolute right-40 top-32 w-56 bg-white p-4 rounded-xl shadow-lg border-2 border-blue-200 opacity-0">
+                    <div class="text-sm font-bold text-blue-600 mb-2">Anonymity:</div>
+                    <div class="text-xs text-gray-700">
+                        The website only sees the VPN server's IP address, not your real one. Your location and identity
+                        remain hidden.
+                    </div>
+                    <div
+                        class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-blue-200">
+                    </div>
+                </div>
+
+                <!-- Step indicator -->
+                <div id="stepIndicator"
+                    class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium opacity-0">
+                    Step <span id="stepNumber">1</span>/6: Connecting to VPN...
+                </div>
+            </div>
+
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200">
+                    <div class="flex items-center mb-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 shadow-inner">
+                            <i class="fas fa-lock text-blue-600"></i>
+                        </div>
+                        <h3 class="font-bold text-blue-800">Military-Grade Encryption</h3>
+                    </div>
+                    <p class="text-sm text-gray-700">
+                        VPNs use AES-256 encryption, the same standard used by governments and military to protect
+                        classified information.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200">
+                    <div class="flex items-center mb-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 shadow-inner">
+                            <i class="fas fa-globe-americas text-blue-600"></i>
+                        </div>
+                        <h3 class="font-bold text-blue-800">Global Server Network</h3>
+                    </div>
+                    <p class="text-sm text-gray-700">
+                        Connect to servers worldwide to bypass geo-restrictions and access content from different
+                        regions.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200">
+                    <div class="flex items-center mb-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 shadow-inner">
+                            <i class="fas fa-history text-blue-600"></i>
+                        </div>
+                        <h3 class="font-bold text-blue-800">No Logs Policy</h3>
+                    </div>
+                    <p class="text-sm text-gray-700">
+                        Premium VPN providers don't keep logs of your online activities, ensuring complete privacy.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const startBtn = document.getElementById('startBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const stepBtn = document.getElementById('stepBtn');
+            const userDevice = document.getElementById('userDevice');
+            const vpnServer = document.getElementById('vpnServer');
+            const website = document.getElementById('website');
+            const internet = document.getElementById('internet');
+            const hacker = document.getElementById('hacker');
+            const connections = document.getElementById('connections');
+            const websiteLog = document.getElementById('websiteLog');
+            const stepIndicator = document.getElementById('stepIndicator');
+            const stepNumber = document.getElementById('stepNumber');
+
+            let animationRunning = false;
+            let currentStep = 0;
+            const totalSteps = 6;
+
+            startBtn.addEventListener('click', startFullAnimation);
+            resetBtn.addEventListener('click', resetAnimation);
+            stepBtn.addEventListener('click', nextStep);
+
+            function startFullAnimation() {
+                if (animationRunning) return;
+                animationRunning = true;
+
+                // Reset animation
+                resetAnimation(false);
+
+                // Run all steps sequentially
+                for (let i = 1; i <= totalSteps; i++) {
+                    setTimeout(() => runStep(i), i * 3000);
+                }
+
+                // Complete animation
+                setTimeout(() => {
+                    animationRunning = false;
+                }, totalSteps * 3000 + 1000);
+            }
+
+            function nextStep() {
+                if (animationRunning) return;
+
+                currentStep++;
+                if (currentStep > totalSteps) {
+                    currentStep = 1;
+                    resetAnimation(false);
+                }
+
+                runStep(currentStep);
+            }
+
+            function runStep(step) {
+                updateStepIndicator(step);
+
+                switch (step) {
+                    case 1:
+                        // Step 1: Show direct connection risks
+                        document.getElementById('directPath').classList.add('path-line');
+                        document.getElementById('explanation1').classList.add('fade-in');
+                        document.getElementById('interceptPoint').style.opacity = '1';
+                        hacker.classList.remove('opacity-0');
+                        hacker.classList.add('fade-in', 'bounce');
+
+                        // Send unencrypted packet
+                        setTimeout(() => {
+                            sendPacket(userDevice, website, false, 'Hi', () => {
+                                websiteLog.textContent = "Visitor: 192.168.1.10";
+                            });
+                        }, 500);
+                        break;
+
+                    case 2:
+                        // Step 2: Show interception
+                        const interceptPoint = document.getElementById('interceptPoint');
+                        interceptPoint.classList.add('highlight');
+
+                        setTimeout(() => {
+                            sendPacket(userDevice, interceptPoint, false, 'Hi', () => {
+                                // Show packet captured by hacker
+                                const hackerRect = hacker.getBoundingClientRect();
+                                const containerRect = connections.getBoundingClientRect();
+                                const packet = createPacket(hackerRect.left + hackerRect.width / 2 - containerRect.left,
+                                    hackerRect.top + hackerRect.height / 2 - containerRect.top,
+                                    false, 'Hi');
+                                connections.appendChild(packet);
+
+                                // Show evil eyes
+                                hacker.innerHTML = '<i class="fas fa-eye text-2xl text-red-500"></i><i class="fas fa-eye text-2xl text-red-500 ml-1"></i>';
+                            });
+                        }, 500);
+                        break;
+
+                    case 3:
+                        // Step 3: Initiate VPN connection
+                        document.getElementById('vpnPath1').classList.add('path-line');
+                        document.getElementById('vpnPath2').classList.add('path-line');
+                        document.getElementById('explanation2').classList.add('fade-in');
+
+                        userDevice.classList.add('highlight');
+                        vpnServer.classList.add('highlight');
+
+                        // Show establishing connection
+                        setTimeout(() => {
+                            sendPacket(userDevice, vpnServer, true, '🔑', () => {
+                                vpnServer.innerHTML = '<i class="fas fa-shield-alt text-3xl text-blue-600 mb-1"></i><span class="text-xs font-medium">VPN Server</span><div class="text-xs text-green-600 mt-1">Connected</div>';
+                            });
+                        }, 500);
+                        break;
+
+                    case 4:
+                        // Step 4: Send encrypted data
+                        setTimeout(() => {
+                            sendPacket(userDevice, vpnServer, true, 'A', () => {
+                                // Data arrives at VPN server and gets decrypted
+                                setTimeout(() => {
+                                    sendPacket(vpnServer, website, false, 'A', () => {
+                                        websiteLog.textContent = "Visitor: 104.18.22.35";
+                                    });
+                                }, 300);
+                            });
+                        }, 500);
+                        break;
+
+                    case 5:
+                        // Step 5: Show response path
+                        setTimeout(() => {
+                            sendPacket(website, vpnServer, false, 'B', () => {
+                                // Data gets encrypted at VPN server
+                                setTimeout(() => {
+                                    sendPacket(vpnServer, userDevice, true, 'B');
+                                }, 300);
+                            });
+                        }, 500);
+                        break;
+
+                    case 6:
+                        // Step 6: Show complete protection
+                        document.getElementById('explanation3').classList.add('fade-in');
+
+                        // Show hacker can't see
+                        hacker.innerHTML = '<i class="fas fa-question text-2xl text-red-500"></i><span class="text-xs font-medium">ISP/Hacker</span>';
+
+                        // Show secure communication
+                        setTimeout(() => {
+                            sendPacket(userDevice, vpnServer, true, 'C', () => {
+                                setTimeout(() => {
+                                    sendPacket(vpnServer, website, false, 'C', () => {
+                                        setTimeout(() => {
+                                            sendPacket(website, vpnServer, false, 'D', () => {
+                                                setTimeout(() => {
+                                                    sendPacket(vpnServer, userDevice, true, 'D');
+                                                }, 300);
+                                            });
+                                        }, 300);
+                                    });
+                                }, 300);
+                            });
+                        }, 500);
+                        break;
+                }
+            }
+
+            function updateStepIndicator(step) {
+                stepNumber.textContent = step;
+
+                let stepText = "";
+                switch (step) {
+                    case 1: stepText = "Showing direct connection risks"; break;
+                    case 2: stepText = "Demonstrating data interception"; break;
+                    case 3: stepText = "Establishing VPN connection"; break;
+                    case 4: stepText = "Sending encrypted data"; break;
+                    case 5: stepText = "Receiving encrypted response"; break;
+                    case 6: stepText = "Complete secure communication"; break;
+                }
+
+                stepIndicator.textContent = `Step ${step}/${totalSteps}: ${stepText}`;
+                stepIndicator.classList.remove('opacity-0');
+                stepIndicator.classList.add('fade-in');
+
+                // Pulse the indicator
+                setTimeout(() => {
+                    stepIndicator.classList.add('highlight');
+                    setTimeout(() => {
+                        stepIndicator.classList.remove('highlight');
+                    }, 1500);
+                }, 100);
+            }
+
+            function createPacket(x, y, isEncrypted, content) {
+                const packet = document.createElement('div');
+                packet.className = `data-packet ${isEncrypted ? 'bg-blue-500 text-white encrypted' : 'bg-gray-400 text-gray-800'}`;
+                packet.innerHTML = isEncrypted ? '<i class="fas fa-lock"></i>' : content;
+                packet.style.left = `${x}px`;
+                packet.style.top = `${y}px`;
+                return packet;
+            }
+
+            function sendPacket(fromElement, toElement, isEncrypted, content, onComplete = () => { }) {
+                const fromRect = fromElement.getBoundingClientRect();
+                const toRect = toElement.getBoundingClientRect();
+
+                const containerRect = connections.getBoundingClientRect();
+
+                const startX = fromRect.left + fromRect.width / 2 - containerRect.left;
+                const startY = fromRect.top + fromRect.height / 2 - containerRect.top;
+                const endX = toRect.left + toRect.width / 2 - containerRect.left;
+                const endY = toRect.top + toRect.height / 2 - containerRect.top;
+
+                const packet = createPacket(startX, startY, isEncrypted, content);
+                connections.appendChild(packet);
+
+                // Animate packet movement
+                setTimeout(() => {
+                    packet.style.left = `${endX}px`;
+                    packet.style.top = `${endY}px`;
+
+                    // Remove packet after animation and trigger completion
+                    setTimeout(() => {
+                        packet.remove();
+                        onComplete();
+
+                        // Pulse the destination element
+                        toElement.classList.add('ring-2', isEncrypted ? 'ring-blue-400' : 'ring-gray-400');
+                        setTimeout(() => {
+                            toElement.classList.remove('ring-2', 'ring-blue-400', 'ring-gray-400');
+                        }, 800);
+                    }, 1000);
+                }, 50);
+            }
+
+            function resetAnimation(completeReset = true) {
+                // Stop any running animations
+                animationRunning = false;
+                currentStep = 0;
+
+                // Remove all packets
+                const packets = document.querySelectorAll('.data-packet');
+                packets.forEach(packet => packet.remove());
+
+                // Reset path animations
+                const paths = document.querySelectorAll('.path-line');
+                paths.forEach(path => {
+                    path.style.strokeDashoffset = '1000';
+                    path.classList.remove('path-line');
+                });
+
+                // Hide explanations
+                const explanations = document.querySelectorAll('[id^="explanation"]');
+                explanations.forEach(exp => {
+                    exp.classList.remove('fade-in');
+                    exp.style.opacity = '0';
+                });
+
+                // Hide step indicator
+                stepIndicator.classList.remove('fade-in');
+                stepIndicator.style.opacity = '0';
+
+                // Hide interception point
+                document.getElementById('interceptPoint').style.opacity = '0';
+
+                // Reset hacker
+                hacker.classList.add('opacity-0');
+                hacker.classList.remove('fade-in', 'bounce');
+                hacker.innerHTML = '<i class="fas fa-user-secret text-2xl text-red-500 mb-1"></i><span class="text-xs font-medium">ISP/Hacker</span>';
+
+                if (completeReset) {
+                    // Reset element states
+                    [userDevice, vpnServer, website, internet].forEach(el => {
+                        el.classList.remove('ring-2', 'ring-blue-400', 'ring-gray-400', 'highlight');
+                    });
+
+                    // Reset device displays
+                    userDevice.innerHTML = '<i class="fas fa-laptop text-4xl text-blue-500 mb-2"></i><span class="text-sm font-medium">Your Device</span><div class="text-xs text-gray-500 mt-1">IP: 192.168.1.10</div>';
+                    vpnServer.innerHTML = '<i class="fas fa-shield-alt text-3xl text-blue-600 mb-1"></i><span class="text-xs font-medium">VPN Server</span><div class="text-xs text-gray-600">IP: 104.18.22.35</div>';
+                    websiteLog.textContent = "Visitor: ...";
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
